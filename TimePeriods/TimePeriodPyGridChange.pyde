@@ -15,6 +15,10 @@ node_dim = 3      # node dimensions (size)
 hglt_dim = 12     # highlighted node dimensions
 earliest_year = latest_year = year_spacing = 0
 
+framesOnScreen = 0
+timePerNamePerSecond = 4
+isPaused = False
+
 class DomDate:
     def __init__(self, year_v, dom_v):
         self.dom_v = dom_v
@@ -222,7 +226,6 @@ def drawEntry(entry):
 def setup():
     global entries, node_length, num_nodes, earliest_year, latest_year, year_spacing
     size(600, 860)
-    frameRate(.5)
     background(bkg_clr['r'], bkg_clr['g'], bkg_clr['b'])
     str_entries = loadStrings('people.txt')
     for e in str_entries:
@@ -238,12 +241,25 @@ def setup():
         
 idx = 0
 def draw():
-    global idx
-    hasFinished = False
-    if idx < len(entries) and not hasFinished:
+    global idx, isPaused, framesOnScreen, timePerNamePerSecond
+    if idx < len(entries):
         clearScreen()
         ng.drawGrid()
         drawEntry(entries[idx])
+        framesOnScreen = framesOnScreen + 1
+        if not isPaused and framesOnScreen == 30 * timePerNamePerSecond:
+            idx = idx + 1
+            framesOnScreen = 0
+        
+def keyPressed():
+    global isPaused, idx
+    if key == ' ':
+        isPaused = not isPaused
+        if isPaused:
+            print('Paused.')
+        else:
+            print('Unpaused.')
+    if key == CODED and keyCode == LEFT and idx != 0:
+        idx = idx - 1
+    if key == CODED and keyCode == RIGHT and idx != len(entries) - 1:
         idx = idx + 1
-    elif idx == len(entries):
-        hasFinished = True
