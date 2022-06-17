@@ -1,14 +1,14 @@
 # ProcessingProjects
-## BoxDivisions
+## Box Divisions
 ![BoxDivisions](https://user-images.githubusercontent.com/17690401/174236013-e32ead1b-d731-4301-b5b6-fb278bce29e3.PNG)
 
 ## Conway
 ![Conway](https://user-images.githubusercontent.com/17690401/174236002-2a71365a-4cc2-40c2-b5fa-85021728396d.PNG)
 
-## Dimaond Thing
+## Diamond Thing
 ![DiamondThing](https://user-images.githubusercontent.com/17690401/174236660-3afd36a5-2a32-481e-9efc-39f55946217c.PNG)
 
-## HexLines
+## Hex Lines
 ![HexLines](https://user-images.githubusercontent.com/17690401/174235993-ea75013e-0d0a-4f0f-9626-91e5cb8dae9c.PNG)
 
 ## LEGO Creator
