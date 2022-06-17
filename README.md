@@ -19,3 +19,9 @@
 
 ## Minesweeper
 ![minesweeper](https://user-images.githubusercontent.com/17690401/174235976-73de2be4-7013-4c98-944d-c23c1f93cf37.PNG)
+
+## Truchet
+![truchet](https://user-images.githubusercontent.com/17690401/174237682-d2d59e86-e2b2-439e-b418-c8b3ec8499b3.PNG)
+
+## Wire World
+![wireworld](https://user-images.githubusercontent.com/17690401/174237705-9be43fb7-ed22-4de7-8f8f-1026a183b7cc.PNG)
