@@ -11,6 +11,9 @@
 ## HexLines
 ![HexLines](https://user-images.githubusercontent.com/17690401/174235993-ea75013e-0d0a-4f0f-9626-91e5cb8dae9c.PNG)
 
+## LEGO Creator
+![LegoCreator](https://user-images.githubusercontent.com/17690401/174237024-756a4562-a74a-4389-b813-8ee151b90da7.PNG)
+
 ## Lissajous
 ![Lissajous](https://user-images.githubusercontent.com/17690401/174235985-ebd5b596-92eb-4eb1-bfc6-24b992d9edc6.PNG)
 
