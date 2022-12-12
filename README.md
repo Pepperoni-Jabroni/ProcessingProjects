@@ -2,7 +2,7 @@
 This GitHub page contains a collection of [Processing](https://processing.org/) projects in either JS, Java, or Python written by myself over several years. Many of these are very old, so may not be engineered "very well". They span in purpose from games to generative art to cellular automata to image shaders and finally visualization tools. I find that Processing is a powerful tool for getting simple graphics on the screen without much hassle. There's several features I'd like to get around to adding to these that I may get around to someday.
 
 ## Box Divisions [Generative Art]
-![BoxDivisions](https://user-images.githubusercontent.com/17690401/174236013-e32ead1b-d731-4301-b5b6-fb278bce29e3.PNG)
+![BoxDivisions00140](https://user-images.githubusercontent.com/17690401/206951941-d3ab159a-4ecb-4e62-8d96-54c28b793fad.png)
 
 ## Conway [Cellular Automata]
 Implementation for [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
