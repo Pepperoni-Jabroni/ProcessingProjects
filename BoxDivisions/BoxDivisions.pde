@@ -1,11 +1,126 @@
 final int MEAN_DIVI = 2,
-          STDDEV_DIVI = 3,
+          STDDEV_DIVI = 1,
           BOX_SIZE = 100;
 // Any of: "RADIAL", "LINE", "RANDOM"
-final String BOX_COLOR_TYPE = "RANDOM";
+String boxColorType = "LINE";
 int backgroundColor = #f2f2f2;
-int wid, hei;
+boolean drawDebug = false;
+boolean drawOutline = false;
+int wid, hei, bufferW, bufferH;
 ArrayList<Integer> boxColors;
+ArrayList<Box> boxes;
+
+class Division {
+  int pointOneLoc;
+  int pointTwoLoc;
+  boolean isClockwise;
+  color col;
+  
+  public Division(color c) {
+    do {
+      pointOneLoc = (int)(random(4 * BOX_SIZE));
+      pointTwoLoc = (int)(random(4 * BOX_SIZE));
+    } while(pointOneLoc == pointTwoLoc);
+    if (pointTwoLoc < pointOneLoc) {
+      int tLoc = pointOneLoc;
+      pointOneLoc = pointTwoLoc;
+      pointTwoLoc = tLoc;
+    }
+    isClockwise = (int)(random(2)) == 0 ? true : false;
+    col = c;
+  }
+  
+  public void draw(int xOrigin, int yOrigin) {
+    int xCenter = xOrigin + (BOX_SIZE / 2);
+    int yCenter = yOrigin + (BOX_SIZE / 2);
+    ArrayList<Integer> corners = getCorners();
+    stroke(col);
+    fill(col);
+    beginShape();
+    vertex(xCenter, yCenter);
+    vertex(xOrigin + getXValForIdx(pointOneLoc), yOrigin + getYValForIdx(pointOneLoc));
+    for (int j = 0; j < corners.size(); j++) {
+      vertex(xOrigin + getXValForIdx(corners.get(j)), yOrigin + getYValForIdx(corners.get(j)));
+    }
+    vertex(xOrigin + getXValForIdx(pointTwoLoc), yOrigin + getYValForIdx(pointTwoLoc));
+    vertex(xCenter, yCenter);
+    endShape(CLOSE);
+  }
+  
+  public void drawWithDebug(int xOrigin, int yOrigin) {
+    draw(xOrigin, yOrigin);
+    ArrayList<Integer> corners = getCorners();
+    int xCenter = xOrigin + (BOX_SIZE / 2);
+    int yCenter = yOrigin + (BOX_SIZE / 2);
+    stroke(#ff0000);
+    fill(#ff0000);
+    circle(xCenter, yCenter, 5);
+    stroke(#FFFF00);
+    fill(#FFFF00);
+    circle(xOrigin + getXValForIdx(pointOneLoc), yOrigin + getYValForIdx(pointOneLoc), 5);
+    for (int j = 0; j < corners.size(); j++) {
+      stroke(#00FF00);
+      fill(#00FF00);
+      circle(xOrigin + getXValForIdx(corners.get(j)), yOrigin + getYValForIdx(corners.get(j)), 5);
+    }
+    stroke(#0000ff);
+    fill(#0000ff);
+    circle(xOrigin + getXValForIdx(pointTwoLoc), yOrigin + getYValForIdx(pointTwoLoc), 5);
+  }
+
+  public ArrayList<Integer> getCorners() {
+    int pointOneSide = (int)(pointOneLoc / BOX_SIZE);
+    int pointTwoSide = (int)(pointTwoLoc / BOX_SIZE);
+    ArrayList<Integer> corners = new ArrayList<Integer>();
+    if (pointOneSide == pointTwoSide && isClockwise) {
+      return corners;
+    }
+    int tSide = pointOneSide;
+    do {
+      int destSide;
+      if (isClockwise) {
+        destSide = getCwSideForSide(tSide);
+      } else {
+        destSide = getCcwSideForSide(tSide);
+      }
+      corners.add(getCornerIdxForSides(tSide, destSide));
+      tSide = destSide;
+    } while (tSide != pointTwoSide);
+    return corners;
+  }
+}
+
+class Box {
+ ArrayList<Division> divisions;
+ int widIdx;
+ int heiIdx;
+ 
+ public Box(int widI, int heiI) {
+  widIdx = widI;
+  heiIdx = heiI;
+  int numDivisions = 0;
+  do{
+    numDivisions = (int)(randomGaussian() * STDDEV_DIVI + MEAN_DIVI);
+  } while(numDivisions < 1);
+  divisions = new ArrayList<>();
+  for (int i = 0; i < numDivisions; i++) {
+    color c = getColorForGridLoc(widI, heiI);
+    divisions.add(new Division(c));
+  }
+ }
+ 
+ public void draw(int bufferW, int bufferH, boolean debug) {
+   int xOrigin = (int)(BOX_SIZE + (widIdx * BOX_SIZE)) + (widIdx * bufferW);
+   int yOrigin = (int)(BOX_SIZE + (heiIdx * BOX_SIZE)) + (heiIdx * bufferH);
+   for(Division d : divisions) {
+     if (debug) {
+       d.drawWithDebug(xOrigin, yOrigin);
+     } else {
+       d.draw(xOrigin, yOrigin);
+     }
+   }
+ }
+}
 
 void setup(){
   boxColors = new ArrayList<Integer>();
@@ -29,7 +144,7 @@ void setup(){
     wid = floor(numBoxesWUnadj);
   }
   wid--;
-  int bufferW = int(usableWidth / wid) - BOX_SIZE;
+  bufferW = int(usableWidth / wid) - BOX_SIZE;
   // Do height computaiton
   int usableHeight = (1117 - (2 * BOX_SIZE));
   float numBoxesHUnadj = 1.0 * usableHeight / BOX_SIZE;
@@ -39,19 +154,48 @@ void setup(){
     hei = floor(numBoxesHUnadj);
   }
   hei--;
-  int bufferH = int(usableHeight / hei) - BOX_SIZE;
+  bufferH = int(usableHeight / hei) - BOX_SIZE;
   background(color(backgroundColor));
+  generateNewBoxes();
+}
+
+void generateNewBoxes() {
+  boxes = new ArrayList<>();
   for (int i = 0; i < wid; i++){
      for (int j = 0; j < hei; j++){
-        drawBox((int)(BOX_SIZE + (i * BOX_SIZE)) + (i * bufferW), (int)(BOX_SIZE + (j * BOX_SIZE)) + (j * bufferH), i, j); 
+        boxes.add(new Box(i, j)); 
      }
   }
 }
 
-void draw() {}
+void draw() {
+  background(color(backgroundColor));
+  for (Box b : boxes) {
+    for (Division d : b.divisions) {
+      d.pointOneLoc++;
+      if (d.pointOneLoc == 4 * BOX_SIZE) {
+        d.pointOneLoc = 0;
+      }
+      d.pointTwoLoc++;
+      if (d.pointTwoLoc == 4 * BOX_SIZE) {
+        d.pointTwoLoc = d.pointOneLoc;
+        d.pointOneLoc = 0;
+        d.isClockwise = !d.isClockwise;
+      }
+    }
+    b.draw(bufferW, bufferH, drawDebug);
+  }
+}
+
+color getColorDarker(color c) {
+  float r = max(red(c) - 25.0, 0.0);
+  float g = max(green(c) - 25.0, 0.0);
+  float b = max(blue(c) - 25.0, 0.0);
+  return color(r, g, b);
+}
 
 color getColorForGridLoc(int curW, int curH) {
-  switch(BOX_COLOR_TYPE) {
+  switch(boxColorType) {
     case "LINE":
       float pct = ((1.0 * curW / wid) + (1.0 * curH / hei)) / 2.0;
       int idx = int(pct * boxColors.size());
@@ -68,90 +212,6 @@ color getColorForGridLoc(int curW, int curH) {
     default:
       return color(boxColors.get(int(random(boxColors.size()))));
   }
-
-}
-
-void drawBox(int xOrigin, int yOrigin, int curW, int curH){
-  int numDivisions = 0;
-  do{
-    numDivisions = (int)(randomGaussian() * STDDEV_DIVI + MEAN_DIVI);
-  } while(numDivisions < 1);
-  for (int i = 0; i < numDivisions; i++) {
-    color c = getColorForGridLoc(curW, curH);
-    drawDivision(xOrigin, yOrigin, c);
-  }
-}
-
-color getColorDarker(color c) {
-  float r = min(red(c) - 25.0, 255.0);
-  float g = min(green(c) - 25.0, 255.0);
-  float b = min(blue(c) - 25.0, 255.0);
-  return color(r, g, b);
-}
-
-void drawDivision(int xOrigin, int yOrigin, color c) {
-  int xCenter = xOrigin + (BOX_SIZE / 2);
-  int yCenter = yOrigin + (BOX_SIZE / 2);
-  stroke(getColorDarker(c));
-  fill(c);
-  int pointOneLoc = (int)(random(4 * BOX_SIZE));
-  int pointTwoLoc = (int)(random(4 * BOX_SIZE));
-  if (pointTwoLoc < pointOneLoc) {
-    int tLoc = pointOneLoc;
-    pointOneLoc = pointTwoLoc;
-    pointTwoLoc = tLoc;
-  }
-  int pointOneSide = (int)(pointOneLoc / BOX_SIZE);
-  int pointTwoSide = (int)(pointTwoLoc / BOX_SIZE);
-  boolean isClockwise = (int)(random(2)) == 0 ? true : false;
-  ArrayList<Integer> corners = getCorners(pointOneSide, pointTwoSide, isClockwise);
-  beginShape();
-  vertex(xCenter, yCenter);
-  vertex(xOrigin + getXValForIdx(pointOneLoc), yOrigin + getYValForIdx(pointOneLoc));
-  for (int j = 0; j < corners.size(); j++) {
-    vertex(xOrigin + getXValForIdx(corners.get(j)), yOrigin + getYValForIdx(corners.get(j)));
-  }
-  vertex(xOrigin + getXValForIdx(pointTwoLoc), yOrigin + getYValForIdx(pointTwoLoc));
-  vertex(xCenter, yCenter);
-  endShape(CLOSE);
-}
-
-void drawDebugPoints(int xOrigin, int yOrigin, int pointOneLoc, int pointTwoLoc, ArrayList<Integer> corners) {
-  int xCenter = xOrigin + (BOX_SIZE / 2);
-  int yCenter = yOrigin + (BOX_SIZE / 2);
-  stroke(#ff0000);
-  fill(#ff0000);
-  circle(xCenter, yCenter, 5);
-  stroke(#FFFF00);
-  fill(#FFFF00);
-  circle(xOrigin + getXValForIdx(pointOneLoc), yOrigin + getYValForIdx(pointOneLoc), 5);
-  for (int j = 0; j < corners.size(); j++) {
-    stroke(#00FF00);
-    fill(#00FF00);
-    circle(xOrigin + getXValForIdx(corners.get(j)), yOrigin + getYValForIdx(corners.get(j)), 5);
-  }
-  stroke(#0000ff);
-  fill(#0000ff);
-  circle(xOrigin + getXValForIdx(pointTwoLoc), yOrigin + getYValForIdx(pointTwoLoc), 5);
-}
-
-ArrayList<Integer> getCorners(int pointOneSide, int pointTwoSide, boolean isClockwise) {
-  ArrayList<Integer> corners = new ArrayList<Integer>();
-  if (pointOneSide == pointTwoSide && isClockwise) {
-    return corners;
-  }
-  int tSide = pointOneSide;
-  do {
-    int destSide;
-    if (isClockwise) {
-      destSide = getCwSideForSide(tSide);
-    } else {
-      destSide = getCcwSideForSide(tSide);
-    }
-    corners.add(getCornerIdxForSides(tSide, destSide));
-    tSide = destSide;
-  } while (tSide != pointTwoSide);
-  return corners;
 }
 
 int getXValForIdx(int idx) {
@@ -197,5 +257,27 @@ void keyPressed(){
   if(key == 's'){
     saveFrame("BoxDivisions#####.png");
     println("Saved");
+  } else if(key == 'r'){
+    generateNewBoxes();
+  } else if(key == 'd') {
+    drawDebug = !drawDebug;
+  }  else if(key == 'o') {
+    drawOutline = !drawOutline;
+  } else if(key == 't') {
+    if (boxColorType == "LINE") {
+      boxColorType = "RANDOM";
+    } else if (boxColorType == "RANDOM") {
+      boxColorType = "RADIAL";
+    } else {
+      boxColorType = "LINE";
+    }
+    generateNewBoxes();
+  } else if(key == 'i') {
+    ArrayList<Integer> flipped = new ArrayList<>();
+    for(int i = boxColors.size() - 1; i >= 0; i--) {
+      flipped.add(boxColors.get(i));
+    }
+    boxColors = flipped;
+    generateNewBoxes();
   }
 }
