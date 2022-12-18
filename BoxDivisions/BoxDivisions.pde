@@ -17,12 +17,7 @@ class Division {
   color col;
   
   public Division(color c) {
-    points = new float[2];
-    do {
-      points[0]= random(4 * BOX_SIZE);
-      points[1] = random(4 * BOX_SIZE);
-    } while(points[0] == points[1]);
-    points = sort(points);
+    points = getRandomPoints();
     isClockwise = (int)(random(2)) == 0 ? true : false;
     col = c;
   }
@@ -95,6 +90,8 @@ class Division {
     points[idx] += incrVal;
     if (points[idx] >= 4 * BOX_SIZE) {
       points[idx] = points[idx] - (4 * BOX_SIZE);
+    } else if (points[idx] < 0) {
+      points[idx] = (4 * BOX_SIZE) - points[idx];
     }
     float firstVal = points[0];
     points = sort(points);
@@ -182,13 +179,17 @@ void generateNewBoxes() {
   }
 }
 
+void resetDivisionColors() {
+  for(Box b : boxes) {
+    for(Division d : b.divisions) {
+      d.col = getColorForGridLoc(b.widIdx, b.heiIdx);
+    }
+  }
+}
+
 void draw() {
   background(color(backgroundColor));
   for (Box b : boxes) {
-    for (Division d : b.divisions) {
-      d.incrementPoint(0, 1.0 / frameAnimMod);
-      d.incrementPoint(1, 1.0 / frameAnimMod);
-    }
     b.draw(bufferW, bufferH, drawDebug);
   }
 }
@@ -265,6 +266,23 @@ int getCcwSideForSide(int side) {
   return side == 0 ? 3 : side - 1;
 }
 
+float distBetweenPts(float p1, float p2) {
+  if (abs(p1 - p2) > 2 * BOX_SIZE) {
+    return 4 * BOX_SIZE - abs(p1 - p2);
+  }
+  return abs(p1 - p2);
+}
+
+float[] getRandomPoints() {
+  float[] points = new float[2];
+  do {
+    points[0] = random(4 * BOX_SIZE);
+    points[1] = random(4 * BOX_SIZE);
+  } while(distBetweenPts(points[0], points[1]) < 0.02);
+  points = sort(points);
+  return points;
+}
+
 void keyPressed(){
   if(key == 's'){
     saveFrame("BoxDivisions#####.png");
@@ -285,13 +303,13 @@ void keyPressed(){
     } else {
       boxColorType = "DIAG_LINE";
     }
-    generateNewBoxes();
+    resetDivisionColors();
   } else if(key == 'i') {
     ArrayList<Integer> flipped = new ArrayList<>();
     for(int i = boxColors.size() - 1; i >= 0; i--) {
       flipped.add(boxColors.get(i));
     }
     boxColors = flipped;
-    generateNewBoxes();
+    resetDivisionColors();
   }
 }
